@@ -5,7 +5,7 @@ from api.models import *
 
 
 class VersionAdmin(admin.ModelAdmin):
-    fields = ('id', 'version',)
+    pass
 
 class UserAdmin(admin.ModelAdmin):
     pass

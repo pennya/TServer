@@ -55,6 +55,7 @@ class Distance(models.Model):
 음식점
 """
 class Restaurant(models.Model):
+    owner = models.ForeignKey(User, on_delete=models.CASCADE, null=True)
     name = models.CharField(max_length=255)
     address = models.CharField(max_length=255)
     category = models.ForeignKey(Category, on_delete=models.CASCADE)
