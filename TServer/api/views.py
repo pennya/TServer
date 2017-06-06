@@ -2,10 +2,15 @@
 from rest_framework import permissions
 from rest_framework import viewsets
 
-from api.models import Category, Restaurant, Weather, Distance, User
+from api.models import Category, Restaurant, Weather, Distance, User, Version
 from api.permissions import IsOwnerOrReadOnly
 from api.serializers import CategorySerializer, RestaurantSerializer, WeatherSerializer, DistanceSerializer, \
-    UserSerializer
+    UserSerializer, VersionSerializer
+
+
+class VersionViewSet(viewsets.ModelViewSet):
+    queryset = Version.objects.all()
+    serializer_class = VersionSerializer
 
 """
 유저 테이블 뷰셋
@@ -48,5 +53,5 @@ class DistanceViewSet(viewsets.ReadOnlyModelViewSet):
 class RestaurantViewSet(viewsets.ModelViewSet):
     queryset = Restaurant.objects.all()
     serializer_class = RestaurantSerializer
-    permission_classes = (permissions.IsAuthenticatedOrReadOnly,
-                          IsOwnerOrReadOnly,)
+    #permission_classes = (permissions.IsAuthenticatedOrReadOnly,
+    #                      IsOwnerOrReadOnly,)

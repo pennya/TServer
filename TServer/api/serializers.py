@@ -1,7 +1,12 @@
 from rest_framework import serializers
 
-from api.models import Category, Restaurant, Distance, User
+from api.models import Category, Restaurant, Distance, User, Version, Weather
 
+
+class VersionSerializer(serializers.HyperlinkedModelSerializer):
+    class Meta:
+        model = Version
+        fields = ('version',)
 
 class UserSerializer(serializers.HyperlinkedModelSerializer):
     class Meta:
@@ -15,7 +20,7 @@ class CategorySerializer(serializers.HyperlinkedModelSerializer):
 
 class WeatherSerializer(serializers.HyperlinkedModelSerializer):
     class Meta:
-        model = Category
+        model = Weather
         fields = ('w_id', 'name')
 
 class DistanceSerializer(serializers.HyperlinkedModelSerializer):
@@ -24,6 +29,11 @@ class DistanceSerializer(serializers.HyperlinkedModelSerializer):
         fields = ('d_id', 'name')
 
 class RestaurantSerializer(serializers.HyperlinkedModelSerializer):
+    # owner = UserSerializer()
+    # category = CategorySerializer()
+    # weather = WeatherSerializer()
+    # distance = DistanceSerializer()
+
     class Meta:
         model = Restaurant
         fields = ('owner','name', 'address', 'category', 'weather',

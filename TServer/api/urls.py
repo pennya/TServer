@@ -11,6 +11,7 @@ Router를 사용하면 뷰코드와 뷰, URL이 자동 연결된다.
 """
 
 router = routers.DefaultRouter()
+router.register(r'versions', views.VersionViewSet)
 router.register(r'users', views.UserViewSet)
 router.register(r'categorys', views.CategoryViewSet)
 router.register(r'weathers', views.WeatherViewSet)
