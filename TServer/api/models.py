@@ -2,6 +2,7 @@ from django.db import models
 
 # Create your models here.
 
+
 """
 버전 관리
 """
@@ -12,23 +13,26 @@ class Version(models.Model):
         return self.version
 
 
+
 """
 사용자 계정 관리
 """
 class User(models.Model):
-    id = models.CharField(max_length=30, primary_key=True)
-    password = models.CharField(max_length=128)
+    u_id = models.AutoField(primary_key=True)
+    id = models.CharField(max_length=30)
+    password = models.CharField(max_length=30)
     email = models.EmailField()
 
     def __str__(self):
         return self.id
+
 
 """
 카테고리
 """
 class Category(models.Model):
     c_id = models.AutoField(primary_key=True)
-    name = models.CharField(max_length=255, null=True)
+    name = models.CharField(max_length=30, null=True)
 
     def __str__(self):
         return self.name

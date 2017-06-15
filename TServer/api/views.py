@@ -7,7 +7,21 @@ from rest_framework.response import Response
 from api.models import Category, Restaurant, Weather, Distance, User, Version
 from api.serializers import CategorySerializer, RestaurantSerializer, WeatherSerializer, DistanceSerializer, \
     UserSerializer, VersionSerializer
+from django.http import HttpResponse
+from rest_framework.renderers import JSONRenderer
+from rest_framework.parsers import JSONParser
+import logging
 
+logger = logging.getLogger('test')
+
+class JSONResponse(HttpResponse):
+    """
+    An HttpResponse that renders its content into JSON.
+    """
+    def __init__(self, data, **kwargs):
+        content = JSONRenderer().render(data)
+        kwargs['content_type'] = 'application/json'
+        super(JSONResponse, self).__init__(content, **kwargs)
 
 """
 버전 테이블 뷰셋
@@ -17,6 +31,21 @@ class VersionViewSet(viewsets.ModelViewSet):
     queryset = Version.objects.all()
     serializer_class = VersionSerializer
 
+    # def list(self, request, *args, **kwargs):
+    #     queryset1 = Version.objects.all()
+    #     logger.info('version list info')
+    #     logger.debug('version list debug')
+    #     logger.error('version list error')
+    #     serializer1 = VersionSerializer(queryset1)
+    #
+    #     return Response(self.get_serializer())
+
+    def create(self, request, *args, **kwargs):
+        logger.error('version create')
+        return Response("{'a':11}")
+
+    def retrieve(self, request, *args, **kwargs):
+        logger.error('version retrieve')
 """
 유저 테이블 뷰셋
 유저 생성, 삭제, 업데이트, 리스트 가능

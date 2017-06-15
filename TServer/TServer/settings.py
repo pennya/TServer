@@ -85,10 +85,10 @@ WSGI_APPLICATION = 'TServer.wsgi.application'
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.mysql',
-        'NAME': 'server',  # 데이터베이스 이름
-        'USER': 'kim2',    # MySQL 사용자 계정
-        'PASSWORD': 'kim2',  # MySQL 패스워드
-        'HOST': 'localhost',
+        'NAME': 'near_company',  # 데이터베이스 이름
+        'USER': 'dev',    # MySQL 사용자 계정
+        'PASSWORD': 'dev123!@#',  # MySQL 패스워드
+        'HOST': '',
         'PORT': ""
     }
 }
@@ -131,3 +131,19 @@ USE_TZ = True
 # https://docs.djangoproject.com/en/1.10/howto/static-files/
 
 STATIC_URL = '/static/'
+
+LOGGING = {
+    'version': 1,
+    'disable_existing_loggers': False,
+    'handlers': {
+        'console': {
+            'class': 'logging.StreamHandler',
+        },
+    },
+    'loggers': {
+        'django': {
+            'handlers': ['console'],
+            'propagate': True,
+        },
+    },
+}
