@@ -4,8 +4,8 @@ from rest_framework import viewsets
 from rest_framework.decorators import detail_route
 from rest_framework.response import Response
 
-from api.models import Category, Restaurant, Weather, Distance, User, Version
-from api.serializers import CategorySerializer, RestaurantSerializer, WeatherSerializer, DistanceSerializer, \
+from .models import Category, Restaurant, Weather, Distance, User, Version
+from .serializers import CategorySerializer, RestaurantSerializer, WeatherSerializer, DistanceSerializer, \
     UserSerializer, VersionSerializer
 from django.http import HttpResponse
 from rest_framework.renderers import JSONRenderer
@@ -41,8 +41,14 @@ class VersionViewSet(viewsets.ModelViewSet):
     #     return Response(self.get_serializer())
 
     def create(self, request, *args, **kwargs):
-        logger.error('version create')
-        return Response("{'a':11}")
+        aaa = request.data
+
+        logger.error('version create abc : '+aaa['abc'])
+        logger.error('version create abcd : ' + aaa['abcd'])
+
+        #ddaa = ['aaa':111, 'bbb':222]
+
+        return Response({'a': 11})
 
     def retrieve(self, request, *args, **kwargs):
         logger.error('version retrieve')
