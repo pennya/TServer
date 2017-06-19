@@ -1,9 +1,13 @@
 # Create your views here.
+from django.contrib import messages
+from django.contrib.auth import authenticate, login
+from django.core.exceptions import ObjectDoesNotExist
 from rest_framework import filters
 from rest_framework import viewsets
 from rest_framework.decorators import detail_route
 from rest_framework.response import Response
 
+from .forms import UserJoinForm
 from .models import Category, Restaurant, Weather, Distance, User, Version
 from .serializers import CategorySerializer, RestaurantSerializer, WeatherSerializer, DistanceSerializer, \
     UserSerializer, VersionSerializer
@@ -30,7 +34,7 @@ class JSONResponse(HttpResponse):
 class VersionViewSet(viewsets.ModelViewSet):
     queryset = Version.objects.all()
     serializer_class = VersionSerializer
-
+    parser_classes = (JSONParser, )
     # def list(self, request, *args, **kwargs):
     #     queryset1 = Version.objects.all()
     #     logger.info('version list info')
@@ -40,18 +44,12 @@ class VersionViewSet(viewsets.ModelViewSet):
     #
     #     return Response(self.get_serializer())
 
-    def create(self, request, *args, **kwargs):
-        aaa = request.data
+    def list(self, request, *args, **kwargs):
+        logger.error('login list start : ')
+        queryset1 = Version.objects.get()
 
-        logger.error('version create abc : '+aaa['abc'])
-        logger.error('version create abcd : ' + aaa['abcd'])
-
-        #ddaa = ['aaa':111, 'bbb':222]
-
-        return Response({'a': 11})
-
-    def retrieve(self, request, *args, **kwargs):
-        logger.error('version retrieve')
+        return Response({'version1111': queryset1.version})
+        #return Response(version=1.0.2)
 """
 유저 테이블 뷰셋
 유저 생성, 삭제, 업데이트, 리스트 가능
@@ -59,6 +57,59 @@ class VersionViewSet(viewsets.ModelViewSet):
 class UserViewSet(viewsets.ModelViewSet):
     queryset = User.objects.all()
     serializer_class = UserSerializer
+    #parser_classes = (JSONParser)
+
+    def update(self, request, *args, **kwargs):
+        userForm = UserJoinForm(request.POST)
+
+        logger.error('user join id : '+userForm.id)
+        logger.error('user join password : ' + userForm.password)
+        logger.error('user join email : ' + userForm.email)
+        if userForm.is_valid():
+            userForm.save()
+            logger.error('user join success : ')
+            return Response({'success': 11})
+        else:
+            logger.error('user join error : ')
+            return Response({'error': 33})
+
+    def list(self, request, *args, **kwargs):
+        username = request.POST['username']
+        password = request.POST['password']
+        user = authenticate(username=username, password=password)
+
+        if user is not None:
+            # 인증 성공 -> 로그인(session framework에 user 등록됨)
+            login(request, user)
+        else:
+            logger.error('login error : ')
+
+"""
+유저 테이블 뷰셋
+유저 생성, 삭제, 업데이트, 리스트 가능
+"""
+class LoginViewSet(viewsets.ModelViewSet):
+    queryset = User.objects.all()
+    serializer_class = UserSerializer
+
+    def create(self, request, *args, **kwargs):
+        logger.error('login list start : ')
+        username = request.POST['username']
+        password = request.POST['password']
+        logger.error('login list username : ' + username)
+        logger.error('login list password : ' + password)
+        #user = authenticate(username=username, password=password)
+
+        try:
+            user = User.objects.get(id=username, password=password)
+            logger.error('login create id : ' + user.id)
+            logger.error('login create password : ' + user.password)
+            #logger.error('login create admin : ' + user.data)
+        except ObjectDoesNotExist:
+            messages.add_message(request, messages.INFO, '아이디 또는 비밀번호가 틀렸습니다')
+            return Response({'error': 33})
+
+        return Response({'login': 22})
 
 
 """
