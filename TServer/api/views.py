@@ -1,13 +1,27 @@
 # Create your views here.
+from django.core.exceptions import ObjectDoesNotExist, MultipleObjectsReturned
 from rest_framework import filters
 from rest_framework import viewsets
 from rest_framework.decorators import detail_route
 from rest_framework.response import Response
-
-from api.models import Category, Restaurant, Weather, Distance, User, Version
-from api.serializers import CategorySerializer, RestaurantSerializer, WeatherSerializer, DistanceSerializer, \
+from .forms import UserJoinForm
+from .models import Category, Restaurant, Weather, Distance, User, Version
+from .serializers import CategorySerializer, RestaurantSerializer, WeatherSerializer, DistanceSerializer, \
     UserSerializer, VersionSerializer
+from django.http import JsonResponse
 
+import logging
+
+logger = logging.getLogger('test')
+
+# class JSONResponse(HttpResponse):
+#     """
+#     An HttpResponse that renders its content into JSON.
+#     """
+#     def __init__(self, data, **kwargs):
+#         content = JSONRenderer().render(data)
+#         kwargs['content_type'] = 'application/json'
+#         super(JSONResponse, self).__init__(content, **kwargs)
 
 """
 버전 테이블 뷰셋
@@ -17,6 +31,14 @@ class VersionViewSet(viewsets.ModelViewSet):
     queryset = Version.objects.all()
     serializer_class = VersionSerializer
 
+    def list(self, request, *args, **kwargs):
+        result = {}
+        version = Version.objects.get(osType='android')
+
+        result['result'] = 200
+        result['osType'] = version.osType
+        result['version'] = version.version
+        return JsonResponse(result)
 """
 유저 테이블 뷰셋
 유저 생성, 삭제, 업데이트, 리스트 가능
@@ -24,6 +46,72 @@ class VersionViewSet(viewsets.ModelViewSet):
 class UserViewSet(viewsets.ModelViewSet):
     queryset = User.objects.all()
     serializer_class = UserSerializer
+    #parser_classes = (JSONParser)
+
+    def create(self, request, *args, **kwargs):
+        userForm = UserJoinForm(request.POST)
+        result = {}
+        idMultipleObject = True
+
+        if userForm.is_valid():
+            try:
+                User.objects.get(id=userForm.data['id'])
+                idMultipleObject = False
+                User.objects.get(email=userForm.data['email'])
+            except MultipleObjectsReturned as e:
+                logger.error('join create error : ' + str(e))
+
+                if idMultipleObject:
+                    result['result'] = 411
+                    result['message'] = 'id 중복'
+                else:
+                    result['result'] = 412
+                    result['message'] = 'email 중복'
+
+                return JsonResponse(result)
+            except ObjectDoesNotExist:
+                pass
+
+            user = userForm.save()
+            result['result'] = 200
+            result['id'] = user.id
+            result['password'] = user.password
+            result['email'] = user.email
+
+            return JsonResponse(result)
+        else:
+            logger.error('user join error : ')
+            result['result'] = 410
+            result['message'] = 'input form error'
+            return JsonResponse(result)
+
+
+"""
+유저 테이블 뷰셋
+유저 생성, 삭제, 업데이트, 리스트 가능
+"""
+class LoginViewSet(viewsets.ModelViewSet):
+    queryset = User.objects.all()
+    serializer_class = UserSerializer
+
+    def create(self, request, *args, **kwargs):
+        result = {}
+        id = request.POST['id']
+        password = request.POST['password']
+
+        try:
+            user = User.objects.get(id=id, password=password)
+        except ObjectDoesNotExist:
+            #messages.add_message(request, messages.INFO, '아이디 또는 비밀번호가 틀렸습니다')
+            result['result'] = 410
+            result['message'] = '아이디 또는 비밀번호가 틀렸습니다'
+            return JsonResponse(result)
+
+        result['result'] = 200
+        result['id'] = user.id
+        result['password'] = user.password
+        result['email'] = user.email
+        return JsonResponse(result)
 
 
 """

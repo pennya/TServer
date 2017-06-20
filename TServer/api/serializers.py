@@ -1,6 +1,6 @@
 from rest_framework import serializers
 
-from api.models import Category, Restaurant, Distance, User, Version, Weather
+from .models import Category, Restaurant, Distance, User, Version, Weather
 
 class VersionSerializer(serializers.ModelSerializer):
     class Meta:
