@@ -1,6 +1,9 @@
 # Create your views here.
 from django.core.exceptions import ObjectDoesNotExist, MultipleObjectsReturned
+from django.core.serializers import json
 from rest_framework import filters
+from rest_framework import status
+from rest_framework import views
 from rest_framework import viewsets
 from rest_framework.decorators import detail_route
 from rest_framework.response import Response
@@ -114,6 +117,23 @@ class LoginViewSet(viewsets.ModelViewSet):
         return JsonResponse(result)
 
 
+class LoginView(views.APIView):
+    def post(self, request, format=None):
+        id = request.POST['id']
+        password = request.POST['password']
+
+        if User.objects.filter(id=id, password=password):
+            return Response({
+                'status' : 100
+            }, status=status.HTTP_200_OK)
+        else:
+            return Response({
+                'status' : 101
+            }, status=status.HTTP_200_OK)
+
+
+
+
 """
 카테고리 테이블 읽기전용 뷰셋
 카테고리 읽기 가능
@@ -133,7 +153,7 @@ class WeatherViewSet(viewsets.ReadOnlyModelViewSet):
     #지정된 날씨가 등록된 음식점 찾기
     @detail_route()
     def restaurant_list(self, request, pk=None):
-        weather = self.get_object();
+        weather = self.get_object()
         restaurant = Restaurant.objects.filter(weather= weather)
         restaurant_json = RestaurantSerializer(restaurant, many=True)
         return Response(restaurant_json.data)
