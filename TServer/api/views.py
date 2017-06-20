@@ -1,31 +1,27 @@
 # Create your views here.
-from django.contrib import messages
-from django.contrib.auth import authenticate, login
-from django.core.exceptions import ObjectDoesNotExist
+from django.core.exceptions import ObjectDoesNotExist, MultipleObjectsReturned
 from rest_framework import filters
 from rest_framework import viewsets
 from rest_framework.decorators import detail_route
 from rest_framework.response import Response
-
 from .forms import UserJoinForm
 from .models import Category, Restaurant, Weather, Distance, User, Version
 from .serializers import CategorySerializer, RestaurantSerializer, WeatherSerializer, DistanceSerializer, \
     UserSerializer, VersionSerializer
-from django.http import HttpResponse
-from rest_framework.renderers import JSONRenderer
-from rest_framework.parsers import JSONParser
+from django.http import JsonResponse
+
 import logging
 
 logger = logging.getLogger('test')
 
-class JSONResponse(HttpResponse):
-    """
-    An HttpResponse that renders its content into JSON.
-    """
-    def __init__(self, data, **kwargs):
-        content = JSONRenderer().render(data)
-        kwargs['content_type'] = 'application/json'
-        super(JSONResponse, self).__init__(content, **kwargs)
+# class JSONResponse(HttpResponse):
+#     """
+#     An HttpResponse that renders its content into JSON.
+#     """
+#     def __init__(self, data, **kwargs):
+#         content = JSONRenderer().render(data)
+#         kwargs['content_type'] = 'application/json'
+#         super(JSONResponse, self).__init__(content, **kwargs)
 
 """
 버전 테이블 뷰셋
@@ -34,22 +30,15 @@ class JSONResponse(HttpResponse):
 class VersionViewSet(viewsets.ModelViewSet):
     queryset = Version.objects.all()
     serializer_class = VersionSerializer
-    parser_classes = (JSONParser, )
-    # def list(self, request, *args, **kwargs):
-    #     queryset1 = Version.objects.all()
-    #     logger.info('version list info')
-    #     logger.debug('version list debug')
-    #     logger.error('version list error')
-    #     serializer1 = VersionSerializer(queryset1)
-    #
-    #     return Response(self.get_serializer())
 
     def list(self, request, *args, **kwargs):
-        logger.error('login list start : ')
-        queryset1 = Version.objects.get()
+        result = {}
+        version = Version.objects.get(osType='android')
 
-        return Response({'version1111': queryset1.version})
-        #return Response(version=1.0.2)
+        result['result'] = 200
+        result['osType'] = version.osType
+        result['version'] = version.version
+        return JsonResponse(result)
 """
 유저 테이블 뷰셋
 유저 생성, 삭제, 업데이트, 리스트 가능
@@ -59,30 +48,43 @@ class UserViewSet(viewsets.ModelViewSet):
     serializer_class = UserSerializer
     #parser_classes = (JSONParser)
 
-    def update(self, request, *args, **kwargs):
+    def create(self, request, *args, **kwargs):
         userForm = UserJoinForm(request.POST)
+        result = {}
+        idMultipleObject = True
 
-        logger.error('user join id : '+userForm.id)
-        logger.error('user join password : ' + userForm.password)
-        logger.error('user join email : ' + userForm.email)
         if userForm.is_valid():
-            userForm.save()
-            logger.error('user join success : ')
-            return Response({'success': 11})
+            try:
+                User.objects.get(id=userForm.data['id'])
+                idMultipleObject = False
+                User.objects.get(email=userForm.data['email'])
+            except MultipleObjectsReturned as e:
+                logger.error('join create error : ' + str(e))
+
+                if idMultipleObject:
+                    result['result'] = 411
+                    result['message'] = 'id 중복'
+                else:
+                    result['result'] = 412
+                    result['message'] = 'email 중복'
+
+                return JsonResponse(result)
+            except ObjectDoesNotExist:
+                pass
+
+            user = userForm.save()
+            result['result'] = 200
+            result['id'] = user.id
+            result['password'] = user.password
+            result['email'] = user.email
+
+            return JsonResponse(result)
         else:
             logger.error('user join error : ')
-            return Response({'error': 33})
+            result['result'] = 410
+            result['message'] = 'input form error'
+            return JsonResponse(result)
 
-    def list(self, request, *args, **kwargs):
-        username = request.POST['username']
-        password = request.POST['password']
-        user = authenticate(username=username, password=password)
-
-        if user is not None:
-            # 인증 성공 -> 로그인(session framework에 user 등록됨)
-            login(request, user)
-        else:
-            logger.error('login error : ')
 
 """
 유저 테이블 뷰셋
@@ -93,23 +95,23 @@ class LoginViewSet(viewsets.ModelViewSet):
     serializer_class = UserSerializer
 
     def create(self, request, *args, **kwargs):
-        logger.error('login list start : ')
-        username = request.POST['username']
+        result = {}
+        id = request.POST['id']
         password = request.POST['password']
-        logger.error('login list username : ' + username)
-        logger.error('login list password : ' + password)
-        #user = authenticate(username=username, password=password)
 
         try:
-            user = User.objects.get(id=username, password=password)
-            logger.error('login create id : ' + user.id)
-            logger.error('login create password : ' + user.password)
-            #logger.error('login create admin : ' + user.data)
+            user = User.objects.get(id=id, password=password)
         except ObjectDoesNotExist:
-            messages.add_message(request, messages.INFO, '아이디 또는 비밀번호가 틀렸습니다')
-            return Response({'error': 33})
+            #messages.add_message(request, messages.INFO, '아이디 또는 비밀번호가 틀렸습니다')
+            result['result'] = 410
+            result['message'] = '아이디 또는 비밀번호가 틀렸습니다'
+            return JsonResponse(result)
 
-        return Response({'login': 22})
+        result['result'] = 200
+        result['id'] = user.id
+        result['password'] = user.password
+        result['email'] = user.email
+        return JsonResponse(result)
 
 
 """

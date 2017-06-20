@@ -8,6 +8,7 @@ from django.db import models
 """
 class Version(models.Model):
     version = models.CharField(max_length=10)
+    osType = models.CharField(max_length=10, default='android')
 
     def __str__(self):
         return self.version
