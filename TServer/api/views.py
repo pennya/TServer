@@ -89,10 +89,6 @@ class UserViewSet(viewsets.ModelViewSet):
             return JsonResponse(result)
 
 
-"""
-유저 테이블 뷰셋
-유저 생성, 삭제, 업데이트, 리스트 가능
-"""
 class LoginViewSet(viewsets.ModelViewSet):
     queryset = User.objects.all()
     serializer_class = UserSerializer
@@ -117,12 +113,15 @@ class LoginViewSet(viewsets.ModelViewSet):
         return JsonResponse(result)
 
 
+"""
+Login Response
+"""
 class LoginView(views.APIView):
     def post(self, request, format=None):
         id = request.POST['id']
         password = request.POST['password']
 
-        if User.objects.filter(id=id, password=password):
+        if User.objects.get(id=id, password=password):
             return Response({
                 'status' : 100
             }, status=status.HTTP_200_OK)
@@ -131,7 +130,19 @@ class LoginView(views.APIView):
                 'status' : 101
             }, status=status.HTTP_200_OK)
 
+"""
+Recommand Response
+"""
+class RecommandView(views.APIView):
+    def post(self, request, format=None):
+        queryDict = request.POST
+        category = queryDict.getlist('category')
+        weather = queryDict.getlist('weather')
+        distance = queryDict.getlist('distance')
 
+        RestaurantList = Restaurant.objects.filter(category__in=category, weather__in=weather, distance__in=distance)
+        restaurant_json = RestaurantSerializer(RestaurantList, many=True)
+        return Response(restaurant_json.data)
 
 
 """

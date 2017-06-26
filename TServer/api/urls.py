@@ -27,4 +27,5 @@ urlpatterns = [
     url(r'^docs$', schema_view),
     url(r'^api-v1/', include('rest_framework.urls', namespace='rest_framework_category')),
     url(r'^userLogin/', views.LoginView.as_view(), name='login'),
+    url(r'^recommands/', views.RecommandView.as_view(), name='recommand'),
 ]
