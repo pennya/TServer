@@ -71,12 +71,11 @@ class UserViewSet(viewsets.ModelViewSet):
                     result['result'] = 412
                     result['message'] = 'email 중복'
 
-                return JsonResponse(result)
+                return JsonResponse(result, status=status.HTTP_400_BAD_REQUEST)
             except ObjectDoesNotExist:
                 pass
 
             user = userForm.save()
-            result['result'] = 200
             result['id'] = user.id
             result['password'] = user.password
             result['email'] = user.email
@@ -86,7 +85,7 @@ class UserViewSet(viewsets.ModelViewSet):
             logger.error('user join error : ')
             result['result'] = 410
             result['message'] = 'input form error'
-            return JsonResponse(result)
+            return JsonResponse(result, status=status.HTTP_400_BAD_REQUEST)
 
 
 """
@@ -108,9 +107,13 @@ class LoginViewSet(viewsets.ModelViewSet):
             #messages.add_message(request, messages.INFO, '아이디 또는 비밀번호가 틀렸습니다')
             result['result'] = 410
             result['message'] = '아이디 또는 비밀번호가 틀렸습니다'
-            return JsonResponse(result)
+            return JsonResponse(result, status=status.HTTP_400_BAD_REQUEST)
+        except MultipleObjectsReturned:
+            result['result'] = 411
+            result['message'] = '동일한 유저 정보 다수 존재합니다.'
+            return JsonResponse(result, status=status.HTTP_400_BAD_REQUEST)
 
-        result['result'] = 200
+        #result['result'] = status.HTTP_200_OK
         result['id'] = user.id
         result['password'] = user.password
         result['email'] = user.email
