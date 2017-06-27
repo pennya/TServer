@@ -38,9 +38,9 @@ class VersionViewSet(viewsets.ModelViewSet):
         result = {}
         version = Version.objects.get(osType='android')
 
-        result['result'] = 200
         result['osType'] = version.osType
-        result['version'] = version.version
+        result['versionCode'] = version.version
+        result['versionName'] = version.version
         return JsonResponse(result)
 """
 유저 테이블 뷰셋

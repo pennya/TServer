@@ -7,7 +7,8 @@ from django.db import models
 버전 관리
 """
 class Version(models.Model):
-    version = models.CharField(max_length=10)
+    versionCode = models.IntegerField(default=1)
+    versionName = models.CharField(max_length=10, default='1.0.0')
     osType = models.CharField(max_length=10, default='android')
 
     def __str__(self):
