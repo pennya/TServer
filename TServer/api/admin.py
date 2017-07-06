@@ -1,32 +1,48 @@
 from django.contrib import admin
 
 # Register your models here.
-from api.models import *
+from api.models import Distance
+from api.models import Weather
+from api.models import Restaurant
+from api.models import Category
+from api.models import Comment
+from api.models import History
+from api.models import Star
+from api.models import User
+from api.models import Version
 
 
 class VersionAdmin(admin.ModelAdmin):
     pass
 
+
 class UserAdmin(admin.ModelAdmin):
     pass
+
 
 class CategoryAdmin(admin.ModelAdmin):
     pass
 
+
 class WeatherAdmin(admin.ModelAdmin):
     pass
+
 
 class DistanceAdmin(admin.ModelAdmin):
     pass
 
+
 class RestaurantAdmin(admin.ModelAdmin):
     pass
+
 
 class CommentAdmin(admin.ModelAdmin):
     pass
 
+
 class StarAdmin(admin.ModelAdmin):
     pass
+
 
 class HistoryAdmin(admin.ModelAdmin):
     pass
