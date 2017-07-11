@@ -4,7 +4,7 @@ from django.conf.urls import include
 from rest_framework import routers
 from rest_framework_swagger.views import get_swagger_view
 
-from api import views
+from TServer.api import views
 
 router = routers.DefaultRouter()
 router.register(r'versions', views.VersionViewSet)
