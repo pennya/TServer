@@ -2,6 +2,9 @@ from django.db import models
 
 # Create your models here.
 
+# db 모델 변경시
+# python manage.py makemigrations
+# python manage.py migrate
 
 """
 버전 관리
