@@ -3,10 +3,10 @@ from django.db import models
 # Create your models here.
 
 
-"""
-버전 관리
-"""
 class Version(models.Model):
+    """
+    version management
+    """
     version = models.CharField(max_length=10)
     osType = models.CharField(max_length=10, default='android')
 
@@ -14,11 +14,10 @@ class Version(models.Model):
         return self.version
 
 
-
-"""
-사용자 계정 관리
-"""
 class User(models.Model):
+    """
+    user account management
+    """
     u_id = models.AutoField(primary_key=True)
     id = models.CharField(max_length=30)
     password = models.CharField(max_length=30)
@@ -28,9 +27,6 @@ class User(models.Model):
         return self.id
 
 
-"""
-카테고리
-"""
 class Category(models.Model):
     c_id = models.AutoField(primary_key=True)
     name = models.CharField(max_length=30, null=True)
@@ -38,27 +34,23 @@ class Category(models.Model):
     def __str__(self):
         return self.name
 
-"""
-날씨
-"""
+
 class Weather(models.Model):
     w_id = models.AutoField(primary_key=True)
     name = models.CharField(max_length=255, null=True)
 
     def __str__(self):
         return self.name
-"""
-거리
-"""
+
+
 class Distance(models.Model):
     d_id = models.AutoField(primary_key=True)
     name = models.CharField(max_length=255, null=True)
 
     def __str__(self):
         return self.name
-"""
-음식점
-"""
+
+
 class Restaurant(models.Model):
     name = models.CharField(max_length=255)
     address = models.CharField(max_length=255)
@@ -70,9 +62,7 @@ class Restaurant(models.Model):
     def __str__(self):
         return self.name
 
-"""
-댓글
-"""
+
 class Comment(models.Model):
     restaurant = models.ForeignKey(Restaurant, on_delete=models.CASCADE)
     content = models.CharField(max_length=255)
@@ -82,10 +72,11 @@ class Comment(models.Model):
     def __str__(self):
         return self.restaurant;
 
-"""
-별점
-"""
+
 class Star(models.Model):
+    """
+    review management
+    """
     comment = models.ForeignKey(Comment, on_delete=models.CASCADE)
     restaurant = models.ForeignKey(Restaurant, on_delete=models.CASCADE)
     user = models.ForeignKey(User, on_delete=models.CASCADE)
@@ -94,10 +85,11 @@ class Star(models.Model):
     def __str__(self):
         return self.comment
 
-"""
-추천이력
-"""
+
 class History(models.Model):
+    """
+    recommand history
+    """
     user = models.ForeignKey(User, on_delete=models.CASCADE)
     restaurant = models.ForeignKey(Restaurant, on_delete=models.CASCADE)
     reg_date = models.DateField(auto_now_add=True)
