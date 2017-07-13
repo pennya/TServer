@@ -5,14 +5,14 @@ from django.db import models
 
 class Version(models.Model):
     """
-        version management
+    version management
     """
     versionCode = models.IntegerField(default=1)
     versionName = models.CharField(max_length=10, default='1.0.0')
     osType = models.CharField(max_length=10, default='android')
 
     def __str__(self):
-        return self.version
+        return self.versionName
 
 
 class User(models.Model):
@@ -66,7 +66,7 @@ class Restaurant(models.Model):
 
 class Comment(models.Model):
     restaurant = models.ForeignKey(Restaurant, on_delete=models.CASCADE)
-    content = models.CharField(max_length=255)
+    content = models.CharField(max_length=255, null=True)
     user = models.ForeignKey(User, on_delete=models.CASCADE)
     reg_date = models.DateField('REG_DATE',auto_now_add=True)
 
@@ -75,16 +75,12 @@ class Comment(models.Model):
 
 
 class Star(models.Model):
-    """
-    review management
-    """
-    comment = models.ForeignKey(Comment, on_delete=models.CASCADE)
     restaurant = models.ForeignKey(Restaurant, on_delete=models.CASCADE)
     user = models.ForeignKey(User, on_delete=models.CASCADE)
     rating = models.IntegerField('RATING')
 
     def __str__(self):
-        return self.comment
+        return self.restaurant
 
 
 class History(models.Model):

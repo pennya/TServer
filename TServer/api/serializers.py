@@ -6,18 +6,20 @@ from .models import Distance
 from .models import User
 from .models import Version
 from .models import Weather
+from .models import Comment
+from .models import Star
 
 
 class VersionSerializer(serializers.ModelSerializer):
     class Meta:
         model = Version
-        fields = ('version', )
+        fields = ('versionCode', 'versionName', 'osType', )
 
 
 class UserSerializer(serializers.ModelSerializer):
     class Meta:
         model = User
-        fields = ('id', 'password', 'email', )
+        fields = ('u_id', 'id', 'password', 'email', )
 
 
 class CategorySerializer(serializers.ModelSerializer):
@@ -41,7 +43,7 @@ class DistanceSerializer(serializers.ModelSerializer):
 class RestaurantSerializer(serializers.ModelSerializer):
     class Meta:
         model = Restaurant
-        fields = ('name', 'address', 'category', 'weather',
+        fields = ('id', 'name', 'address', 'category', 'weather',
                   'distance', 'description', )
         extra_kwargs = {
             'name' : {'required' : True},
@@ -49,3 +51,15 @@ class RestaurantSerializer(serializers.ModelSerializer):
             'weather': {'required': True},
             'distance': {'required': True},
         }
+
+
+class CommentSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Comment
+        fields = ('id', 'restaurant', 'content', 'user', 'reg_date', )
+
+
+class StarSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Star
+        fields = ('id', 'restaurant', 'user', 'rating', )
