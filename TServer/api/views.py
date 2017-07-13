@@ -131,17 +131,17 @@ class RecommandViewSet(viewsets.ModelViewSet):
         return Response(restaurant_json.data)
 
 
-class CategoryViewSet(viewsets.ReadOnlyModelViewSet):
+class CategoryViewSet(viewsets.ModelViewSet):
     queryset = Category.objects.all()
     serializer_class = CategorySerializer
 
 
-class WeatherViewSet(viewsets.ReadOnlyModelViewSet):
+class WeatherViewSet(viewsets.ModelViewSet):
     queryset = Weather.objects.all()
     serializer_class = WeatherSerializer
 
 
-class DistanceViewSet(viewsets.ReadOnlyModelViewSet):
+class DistanceViewSet(viewsets.ModelViewSet):
     queryset = Distance.objects.all()
     serializer_class = DistanceSerializer
 
