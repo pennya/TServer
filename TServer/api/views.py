@@ -164,21 +164,6 @@ class StarViewSet(viewsets.ModelViewSet):
     queryset = Star.objects.all()
     serializer_class = StarSerializer
 
-    def create(self, request, *args, **kwargs):
-        result = {}
-        star_form = StarForm(request.data)
-        if star_form.is_valid():
-            star = star_form.save(commit=False)
-            result['restaurant'] = star.restaurant.pk
-            result['user'] = star.user.pk
-            result['rating'] = star.rating
-            star.save()
-            return super(StarViewSet, self).create(request, *args, **kwargs)
-        else:
-            result['result'] = 413
-            result['message'] = 'invalid parameters.'
-            return JsonResponse(result)
-
 
 class ParticularStarViewSet(viewsets.ModelViewSet):
     queryset = Star.objects.all()
