@@ -5,7 +5,8 @@ from django.http import JsonResponse
 from django.core.exceptions import ObjectDoesNotExist
 from django.core.exceptions import MultipleObjectsReturned
 
-from rest_framework import filters, status
+from rest_framework import filters
+from rest_framework import status
 from rest_framework import viewsets
 from rest_framework.response import Response
 
@@ -15,22 +16,24 @@ from .serializers import WeatherSerializer
 from .serializers import DistanceSerializer
 from .serializers import UserSerializer
 from .serializers import VersionSerializer
+from .serializers import CommentSerializer
+from .serializers import StarSerializer
 
 from .forms import UserJoinForm
+from .forms import StarForm
+
 from .models import Category
 from .models import Version
 from .models import Restaurant
 from .models import Distance
 from .models import Weather
 from .models import User
+from .models import Comment
+from .models import Star
 
 logger = logging.getLogger('test')
 
-
 class VersionViewSet(viewsets.ModelViewSet):
-    """
-    version CRUD
-    """
     queryset = Version.objects.all()
     serializer_class = VersionSerializer
 
@@ -45,14 +48,11 @@ class VersionViewSet(viewsets.ModelViewSet):
 
 
 class UserViewSet(viewsets.ModelViewSet):
-    """
-    User CRUD
-    """
     queryset = User.objects.all()
     serializer_class = UserSerializer
 
     def create(self, request, *args, **kwargs):
-        userForm = UserJoinForm(request.POST)
+        userForm = UserJoinForm(request.data)
         result = {}
         idMultipleObject = True
 
@@ -89,16 +89,13 @@ class UserViewSet(viewsets.ModelViewSet):
 
 
 class LoginViewSet(viewsets.ModelViewSet):
-    """
-    login post
-    """
     queryset = User.objects.all()
     serializer_class = UserSerializer
 
     def create(self, request, *args, **kwargs):
         result = {}
-        id = request.POST['id']
-        password = request.POST['password']
+        id = request.data['id']
+        password = request.data['password']
 
         try:
             user = User.objects.get(id=id, password=password)
@@ -120,14 +117,11 @@ class LoginViewSet(viewsets.ModelViewSet):
 
 
 class RecommandViewSet(viewsets.ModelViewSet):
-    """
-    recommand post
-    """
     queryset = Restaurant.objects.all()
     serializer_class = RestaurantSerializer
 
     def create(self, request, *args, **kwargs):
-        queryDict = request.POST
+        queryDict = request.data
         category = queryDict.getlist('category')
         weather = queryDict.getlist('weather')
         distance = queryDict.getlist('distance')
@@ -137,17 +131,17 @@ class RecommandViewSet(viewsets.ModelViewSet):
         return Response(restaurant_json.data)
 
 
-class CategoryViewSet(viewsets.ReadOnlyModelViewSet):
+class CategoryViewSet(viewsets.ModelViewSet):
     queryset = Category.objects.all()
     serializer_class = CategorySerializer
 
 
-class WeatherViewSet(viewsets.ReadOnlyModelViewSet):
+class WeatherViewSet(viewsets.ModelViewSet):
     queryset = Weather.objects.all()
     serializer_class = WeatherSerializer
 
 
-class DistanceViewSet(viewsets.ReadOnlyModelViewSet):
+class DistanceViewSet(viewsets.ModelViewSet):
     queryset = Distance.objects.all()
     serializer_class = DistanceSerializer
 
@@ -159,6 +153,32 @@ class RestaurantViewSet(viewsets.ModelViewSet):
     """
     queryset = Restaurant.objects.all()
     serializer_class = RestaurantSerializer
-    filter_backends = (filters.DjangoFilterBackend,)
-    filter_fields = ('name','weather',)
 
+
+class CommentViewSet(viewsets.ModelViewSet):
+    queryset = Comment.objects.all()
+    serializer_class = CommentSerializer
+
+
+class StarViewSet(viewsets.ModelViewSet):
+    queryset = Star.objects.all()
+    serializer_class = StarSerializer
+
+
+class ParticularStarViewSet(viewsets.ModelViewSet):
+    queryset = Star.objects.all()
+    serializer_class = StarSerializer
+
+    def create(self, request, *args, **kwargs):
+        result = {}
+        restaurant = request.data['restaurant']
+        user = request.data['user']
+        star_list = Star.objects.filter(restaurant=restaurant, user=user).distinct()
+
+        if star_list.count() == 0:
+            result['result'] = 414
+            result['message'] = 'could not find any matched content'
+            return JsonResponse(result)
+
+        star_json = StarSerializer(star_list, many=True)
+        return Response(star_json.data)
