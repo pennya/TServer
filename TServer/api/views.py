@@ -30,6 +30,7 @@ from .models import Weather
 from .models import User
 from .models import Comment
 from .models import Star
+from .models import RestaurantMap
 
 logger = logging.getLogger('test')
 
@@ -174,6 +175,47 @@ class ParticularStarViewSet(viewsets.ModelViewSet):
         restaurant = request.data['restaurant']
         user = request.data['user']
         star_list = Star.objects.filter(restaurant=restaurant, user=user).distinct()
+
+        if star_list.count() == 0:
+            result['result'] = 414
+            result['message'] = 'could not find any matched content'
+            return JsonResponse(result)
+
+        star_json = StarSerializer(star_list, many=True)
+        return Response(star_json.data)
+
+class RestaurantDetailInfoViewSet(viewsets.ModelViewSet):
+    queryset = Restaurant.objects.all()
+    serializer_class = RestaurantSerializer
+
+    def create(self, request, *args, **kwargs):
+        result = {}
+        restaurantId = request.data['id']
+        restaurantInfo = Restaurant.objects.filter(id=restaurantId)
+
+        star_list = Star.objects.filter(restaurant=restaurantId)
+
+        ratingAverageValue = 0
+
+        for i in star_list:
+            ratingAverageValue += i.rating
+
+        ratingAverageValue = ratingAverageValue / star_list.count()
+
+        comment_list = Comment.objects.filter(restaurant=restaurantId).all()
+        mapInfo = RestaurantMap.objects.filter(restaurant=restaurantId)
+        # #
+        # 이름
+        # 주소
+        # 카테고리
+        # 날씨
+        # 거리
+        # 설명
+        # 별점
+        # 댓그카운트
+        # 이미지리스트
+        # 위도
+        # 경도#
 
         if star_list.count() == 0:
             result['result'] = 414

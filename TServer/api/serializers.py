@@ -44,7 +44,7 @@ class RestaurantSerializer(serializers.ModelSerializer):
     class Meta:
         model = Restaurant
         fields = ('id', 'name', 'address', 'category', 'weather',
-                  'distance', 'description', )
+                  'distance', 'description', 'star', 'commentCount', 'image', 'latitude', 'longitude')
         extra_kwargs = {
             'name' : {'required' : True},
             'category': {'required': True},
