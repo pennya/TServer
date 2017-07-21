@@ -1,5 +1,6 @@
 # Create your views here.
 import logging
+import random
 
 from django.http import JsonResponse
 from django.core.exceptions import ObjectDoesNotExist
@@ -127,7 +128,13 @@ class RecommandViewSet(viewsets.ModelViewSet):
         distance = queryDict.getlist('distance')
 
         RestaurantList = Restaurant.objects.filter(category__in=category, weather__in=weather, distance__in=distance)
-        restaurant_json = RestaurantSerializer(RestaurantList, many=True)
+        randomNum = random.randrange(0, RestaurantList.count())
+
+        new_restaurant_list = []
+        specific_restaurant = RestaurantList[randomNum]
+        new_restaurant_list.append(specific_restaurant)
+
+        restaurant_json = RestaurantSerializer(new_restaurant_list, many=True)
         return Response(restaurant_json.data)
 
 
