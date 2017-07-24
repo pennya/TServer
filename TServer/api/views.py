@@ -6,7 +6,6 @@ from django.http import JsonResponse
 from django.core.exceptions import ObjectDoesNotExist
 from django.core.exceptions import MultipleObjectsReturned
 
-from rest_framework import filters
 from rest_framework import status
 from rest_framework import viewsets
 from rest_framework.response import Response
@@ -19,9 +18,9 @@ from .serializers import UserSerializer
 from .serializers import VersionSerializer
 from .serializers import CommentSerializer
 from .serializers import StarSerializer
+from .serializers import HistorySerializer
 
 from .forms import UserJoinForm
-from .forms import StarForm
 
 from .models import Category
 from .models import Version
@@ -31,6 +30,7 @@ from .models import Weather
 from .models import User
 from .models import Comment
 from .models import Star
+from .models import History
 
 logger = logging.getLogger('test')
 
@@ -163,29 +163,90 @@ class RestaurantViewSet(viewsets.ModelViewSet):
 
 
 class CommentViewSet(viewsets.ModelViewSet):
+    """
+    comment CRUD
+    allow to make duplicate record in database.
+    """
     queryset = Comment.objects.all()
     serializer_class = CommentSerializer
 
+    def get_queryset(self):
+        restaurant_id = self.request.query_params.get('restaurant');
+
+        if restaurant_id is not None:
+            queryset = Comment.objects.filter(restaurant=restaurant_id)
+        else:
+            queryset = Comment.objects.all()
+
+        return queryset
+
 
 class StarViewSet(viewsets.ModelViewSet):
+    """
+    star CRUD
+    not allow to make duplicate record in database
+    """
     queryset = Star.objects.all()
     serializer_class = StarSerializer
 
+    def get_queryset(self):
+        restaurant_id = self.request.query_params.get('restaurant')
+        user_id = self.request.query_params.get('user')
 
-class ParticularStarViewSet(viewsets.ModelViewSet):
-    queryset = Star.objects.all()
-    serializer_class = StarSerializer
+        if restaurant_id is not None and user_id is not None:
+            queryset = Star.objects.filter(restaurant=restaurant_id, user=user_id).distinct()
+        else:
+            queryset = Star.objects.all()
+
+        return queryset
+
+    def list(self, request, *args, **kwargs):
+        custom_data = {}
+        result = {}
+
+        star_obj = self.get_queryset()
+        if star_obj.count() != 0:
+            star_json = StarSerializer(star_obj, many=True).data
+            custom_data.update({
+                'result' : star_json
+            })
+        else:
+            result['result'] = 414
+            result['message'] = 'could not find any matched content'
+            custom_data.update({
+                'result' : result
+            })
+
+        return Response(custom_data)
 
     def create(self, request, *args, **kwargs):
         result = {}
-        restaurant = request.data['restaurant']
-        user = request.data['user']
-        star_list = Star.objects.filter(restaurant=restaurant, user=user).distinct()
 
-        if star_list.count() == 0:
-            result['result'] = 414
-            result['message'] = 'could not find any matched content'
-            return JsonResponse(result)
+        restaurant_id = request.data['restaurant']
+        user_id = request.data['user']
 
-        star_json = StarSerializer(star_list, many=True)
-        return Response(star_json.data)
+        star_obj = Star.objects.filter(restaurant=restaurant_id, user=user_id)
+        if star_obj.count() == 0:
+            return super().create(request)
+
+        else:
+            result.update({
+                'result' : 415,
+                'message': 'There is duplicate record.',
+            })
+            return Response(result)
+
+
+class HistoryViewSet(viewsets.ModelViewSet):
+    queryset = History.objects.all()
+    serializer_class = HistorySerializer
+
+    def get_queryset(self):
+        user_id = self.request.query_params.get('user')
+
+        if user_id is not None:
+            queryset = History.objects.filter(user=user_id)
+        else:
+            queryset = History.objects.all()
+
+        return queryset
