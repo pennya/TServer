@@ -1,13 +1,15 @@
 # Create your views here.
 import logging
 
-from django.http import JsonResponse
+from django.core import serializers
+from django.http import JsonResponse, HttpResponse
 from django.core.exceptions import ObjectDoesNotExist
 from django.core.exceptions import MultipleObjectsReturned
 
 from rest_framework import filters
 from rest_framework import status
 from rest_framework import viewsets
+from rest_framework.renderers import JSONRenderer
 from rest_framework.response import Response
 
 from .serializers import CategorySerializer
@@ -22,7 +24,7 @@ from .serializers import StarSerializer
 from .forms import UserJoinForm
 from .forms import StarForm
 
-from .models import Category
+from .models import Category, RestaurantImage
 from .models import Version
 from .models import Restaurant
 from .models import Distance
@@ -191,19 +193,42 @@ class RestaurantDetailInfoViewSet(viewsets.ModelViewSet):
     def create(self, request, *args, **kwargs):
         result = {}
         restaurantId = request.data['id']
+        userId = request.data['userId']
+        print('res id : '+str(restaurantId))
+        print('user id : '+str(userId))
         restaurantInfo = Restaurant.objects.filter(id=restaurantId)
-
+        print(str(11111111111111))
         star_list = Star.objects.filter(restaurant=restaurantId)
-
+        print(str(222222222222222))
         ratingAverageValue = 0
 
         for i in star_list:
             ratingAverageValue += i.rating
 
         ratingAverageValue = ratingAverageValue / star_list.count()
-
+        userRatingValue = Star.objects.filter(restaurant=restaurantId, user=userId)
         comment_list = Comment.objects.filter(restaurant=restaurantId).all()
         mapInfo = RestaurantMap.objects.filter(restaurant=restaurantId)
+
+        images = RestaurantImage.objects.filter(restaurant=restaurantId)
+
+
+        #detailRestaurant = serializers.serialize("json", restaurantInfo)
+        # restaurantMap = serializers.serialize('json', mapInfo)
+        restaurantImages = serializers.serialize("json", images)
+        #json = JSONRenderer().render(restaurantImages)
+
+
+        #print(str(detailRestaurant))
+        #return HttpResponse(restaurantImages, content_type='application/json')
+        return JsonResponse(images)
+        # return Response({
+        #     'cart': cart_serializer.data,
+        #     'another': another_serializer.data,
+        #     'yet_another_field': 'yet another value',
+        # })
+
+
         # #
         # 이름
         # 주소
