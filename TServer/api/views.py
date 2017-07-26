@@ -1,15 +1,14 @@
 # Create your views here.
 import logging
+import random
 
 from django.core import serializers
 from django.http import JsonResponse, HttpResponse
 from django.core.exceptions import ObjectDoesNotExist
 from django.core.exceptions import MultipleObjectsReturned
 
-from rest_framework import filters
 from rest_framework import status
 from rest_framework import viewsets
-from rest_framework.renderers import JSONRenderer
 from rest_framework.response import Response
 
 from .serializers import CategorySerializer
@@ -20,9 +19,9 @@ from .serializers import UserSerializer
 from .serializers import VersionSerializer
 from .serializers import CommentSerializer
 from .serializers import StarSerializer
+from .serializers import HistorySerializer
 
 from .forms import UserJoinForm
-from .forms import StarForm
 
 from .models import Category, RestaurantImage
 from .models import Version
@@ -33,6 +32,7 @@ from .models import User
 from .models import Comment
 from .models import Star
 from .models import RestaurantMap
+from .models import History
 
 logger = logging.getLogger('test')
 
@@ -130,7 +130,13 @@ class RecommandViewSet(viewsets.ModelViewSet):
         distance = queryDict.getlist('distance')
 
         RestaurantList = Restaurant.objects.filter(category__in=category, weather__in=weather, distance__in=distance)
-        restaurant_json = RestaurantSerializer(RestaurantList, many=True)
+        randomNum = random.randrange(0, RestaurantList.count())
+
+        new_restaurant_list = []
+        specific_restaurant = RestaurantList[randomNum]
+        new_restaurant_list.append(specific_restaurant)
+
+        restaurant_json = RestaurantSerializer(new_restaurant_list, many=True)
         return Response(restaurant_json.data)
 
 
@@ -159,104 +165,88 @@ class RestaurantViewSet(viewsets.ModelViewSet):
 
 
 class CommentViewSet(viewsets.ModelViewSet):
+    """
+    comment CRUD
+    allow to make duplicate record in database.
+    """
     queryset = Comment.objects.all()
     serializer_class = CommentSerializer
 
+    def get_queryset(self):
+        restaurant_id = self.request.query_params.get('restaurant');
+
+        if restaurant_id is not None:
+            queryset = Comment.objects.filter(restaurant=restaurant_id)
+        else:
+            queryset = Comment.objects.all()
+
+        return queryset
+
 
 class StarViewSet(viewsets.ModelViewSet):
+    """
+    star CRUD
+    not allow to make duplicate record in database
+    """
     queryset = Star.objects.all()
     serializer_class = StarSerializer
 
+    def get_queryset(self):
+        restaurant_id = self.request.query_params.get('restaurant')
+        user_id = self.request.query_params.get('user')
 
-class ParticularStarViewSet(viewsets.ModelViewSet):
-    queryset = Star.objects.all()
-    serializer_class = StarSerializer
+        if restaurant_id is not None and user_id is not None:
+            queryset = Star.objects.filter(restaurant=restaurant_id, user=user_id).distinct()
+        else:
+            queryset = Star.objects.all()
 
-    def create(self, request, *args, **kwargs):
-        result = {}
-        restaurant = request.data['restaurant']
-        user = request.data['user']
-        star_list = Star.objects.filter(restaurant=restaurant, user=user).distinct()
-
-        if star_list.count() == 0:
-            result['result'] = 414
-            result['message'] = 'could not find any matched content'
-            return JsonResponse(result)
-
-        star_json = StarSerializer(star_list, many=True)
-        return Response(star_json.data)
-
-class RestaurantDetailInfoViewSet(viewsets.ModelViewSet):
-    queryset = Restaurant.objects.all()
-    serializer_class = RestaurantSerializer
-
+        return queryset
 
     def list(self, request, *args, **kwargs):
-        print(str(222222222222222))
-        aa = request.get
-        bb = request.get('userId')
-        print('res id : '+str(aa))
-        print('user id : '+str(bb))
-        restaurantInfo = Restaurant.objects.filter(id='1')
-        res = RestaurantSerializer(restaurantInfo)
-        return JsonResponse(res.data)
+        result = {}
+
+        star_obj = self.get_queryset()
+        if star_obj.count() != 0:
+            star_json = StarSerializer(star_obj, many=True).data
+            result.update({
+                'result' : star_json
+            })
+        else:
+            result.update({
+                'result': 414,
+                'message': 'could not find any matched content',
+            })
+
+        return Response(result)
 
     def create(self, request, *args, **kwargs):
         result = {}
-        restaurantId = request.data['id']
-        userId = request.data['userId']
-        print('res id : '+str(restaurantId))
-        print('user id : '+str(userId))
-        restaurantInfo = Restaurant.objects.filter(id=restaurantId)
-        print(str(11111111111111))
-        star_list = Star.objects.filter(restaurant=restaurantId)
 
-        ratingAverageValue = 0
+        restaurant_id = request.data['restaurant']
+        user_id = request.data['user']
 
-        for i in star_list:
-            ratingAverageValue += i.rating
+        star_obj = Star.objects.filter(restaurant=restaurant_id, user=user_id)
+        if star_obj.count() == 0:
+            return super().create(request)
 
-        ratingAverageValue = ratingAverageValue / star_list.count()
-        userRatingValue = Star.objects.filter(restaurant=restaurantId, user=userId)
-        comment_list = Comment.objects.filter(restaurant=restaurantId).all()
-        mapInfo = RestaurantMap.objects.filter(restaurant=restaurantId)
-
-        images = RestaurantImage.objects.filter(restaurant=restaurantId)
+        else:
+            result.update({
+                'result' : 415,
+                'message': 'There is duplicate record.',
+            })
+            return Response(result)
 
 
-        #detailRestaurant = serializers.serialize("json", restaurantInfo)
-        # restaurantMap = serializers.serialize('json', mapInfo)
-        restaurantImages = serializers.serialize("json", images)
-        #json = JSONRenderer().render(restaurantImages)
+class HistoryViewSet(viewsets.ModelViewSet):
+    queryset = History.objects.all()
+    serializer_class = HistorySerializer
 
+    def get_queryset(self):
+        user_id = self.request.query_params.get('user')
 
-        #print(str(detailRestaurant))
-        #return HttpResponse(restaurantImages, content_type='application/json')
-        return JsonResponse(images)
-        # return Response({
-        #     'cart': cart_serializer.data,
-        #     'another': another_serializer.data,
-        #     'yet_another_field': 'yet another value',
-        # })
+        if user_id is not None:
+            queryset = History.objects.filter(user=user_id)
+        else:
+            queryset = History.objects.all()
 
-
-        # #
-        # 이름
-        # 주소
-        # 카테고리
-        # 날씨
-        # 거리
-        # 설명
-        # 별점
-        # 댓그카운트
-        # 이미지리스트
-        # 위도
-        # 경도#
-
-        if star_list.count() == 0:
-            result['result'] = 414
-            result['message'] = 'could not find any matched content'
-            return JsonResponse(result)
-
-        star_json = StarSerializer(star_list, many=True)
-        return Response(star_json.data)
+        return queryset
