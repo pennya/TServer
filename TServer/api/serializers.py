@@ -8,6 +8,7 @@ from .models import Version
 from .models import Weather
 from .models import Comment
 from .models import Star
+from .models import History
 
 
 class VersionSerializer(serializers.ModelSerializer):
@@ -63,3 +64,9 @@ class StarSerializer(serializers.ModelSerializer):
     class Meta:
         model = Star
         fields = ('id', 'restaurant', 'user', 'rating', )
+
+
+class HistorySerializer(serializers.ModelSerializer):
+    class Meta:
+        model = History
+        fields = ('id', 'restaurant', 'user', 'reg_date')
