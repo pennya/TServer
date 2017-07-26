@@ -190,6 +190,17 @@ class RestaurantDetailInfoViewSet(viewsets.ModelViewSet):
     queryset = Restaurant.objects.all()
     serializer_class = RestaurantSerializer
 
+
+    def list(self, request, *args, **kwargs):
+        print(str(222222222222222))
+        aa = request.get
+        bb = request.get('userId')
+        print('res id : '+str(aa))
+        print('user id : '+str(bb))
+        restaurantInfo = Restaurant.objects.filter(id='1')
+        res = RestaurantSerializer(restaurantInfo)
+        return JsonResponse(res.data)
+
     def create(self, request, *args, **kwargs):
         result = {}
         restaurantId = request.data['id']
@@ -199,7 +210,7 @@ class RestaurantDetailInfoViewSet(viewsets.ModelViewSet):
         restaurantInfo = Restaurant.objects.filter(id=restaurantId)
         print(str(11111111111111))
         star_list = Star.objects.filter(restaurant=restaurantId)
-        print(str(222222222222222))
+
         ratingAverageValue = 0
 
         for i in star_list:
