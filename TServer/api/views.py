@@ -11,7 +11,7 @@ from rest_framework import status
 from rest_framework import viewsets
 from rest_framework.response import Response
 
-from .serializers import CategorySerializer
+from .serializers import CategorySerializer, MapSerializer, ImageSerializer
 from .serializers import RestaurantSerializer
 from .serializers import WeatherSerializer
 from .serializers import DistanceSerializer
@@ -250,3 +250,65 @@ class HistoryViewSet(viewsets.ModelViewSet):
             queryset = History.objects.all()
 
         return queryset
+
+
+class RestaurantDetailInfoViewSet(viewsets.ModelViewSet):
+    queryset = Restaurant.objects.all()
+    serializer_class = RestaurantSerializer
+
+    def create(self, request, *args, **kwargs):
+        result = {}
+        restaurantId = request.data['id']
+        userId = request.data['userId']
+        print('res id : '+str(restaurantId))
+        print('user id : '+str(userId))
+        restaurantInfo = Restaurant.objects.filter(id=restaurantId)
+        restaurant_serializer = RestaurantSerializer(restaurantInfo, many=True)
+        print(str(11111111111111))
+        star_list = Star.objects.filter(restaurant=restaurantId)
+
+        ratingAverageValue = 0
+
+        for i in star_list:
+            ratingAverageValue += i.rating
+
+        ratingAverageValue = ratingAverageValue / star_list.count()
+        userRatingValue = Star.objects.filter(restaurant=restaurantId, user=userId)
+        user_star_serializer = StarSerializer(userRatingValue, many=True)
+        comment_list = Comment.objects.filter(restaurant=restaurantId).all()
+        mapInfo = RestaurantMap.objects.filter(restaurant=restaurantId)
+        map_serializer = MapSerializer(mapInfo, many=True)
+        images = RestaurantImage.objects.filter(restaurant=restaurantId)
+        image_serializer = ImageSerializer(images, many=True)
+
+        #detailRestaurant = serializers.serialize("json", restaurantInfo)
+        # restaurantMap = serializers.serialize('json', mapInfo)
+        restaurantImages = serializers.serialize("json", images)
+        #json = JSONRenderer().render(restaurantImages)
+
+
+        #print(str(detailRestaurant))
+        #return HttpResponse(restaurantImages, content_type='application/json')
+        #return JsonResponse(images)
+        return Response({
+            'restaurant': restaurant_serializer.data,
+            'ratingAverage': ratingAverageValue,
+            'userRating': user_star_serializer.data,
+            'commentCount': len(comment_list),
+            'map': map_serializer.data,
+            'images': image_serializer.data
+        })
+
+
+        # #
+        # 이름
+        # 주소
+        # 카테고리
+        # 날씨
+        # 거리
+        # 설명
+        # 별점
+        # 댓그카운트
+        # 이미지리스트
+        # 위도
+        # 경도#
