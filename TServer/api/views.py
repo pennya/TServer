@@ -286,4 +286,3 @@ class RestaurantDetailInfoViewSet(viewsets.ModelViewSet):
             'map': map_serializer.data,
             'images': image_serializer.data
         })
-    
