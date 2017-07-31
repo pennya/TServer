@@ -269,7 +269,7 @@ class RestaurantDetailInfoViewSet(viewsets.ModelViewSet):
         for i in star_list:
             ratingAverageValue += i.rating
 
-        ratingAverageValue = ratingAverageValue / star_list.count()
+        ratingAverageValue = round(ratingAverageValue / star_list.count())
         userRatingValue = Star.objects.filter(restaurant=restaurantId, user=userId)
         user_star_serializer = StarSerializer(userRatingValue, many=True)
         comment_list = Comment.objects.filter(restaurant=restaurantId).all()
