@@ -260,11 +260,8 @@ class RestaurantDetailInfoViewSet(viewsets.ModelViewSet):
         result = {}
         restaurantId = request.data['id']
         userId = request.data['userId']
-        print('res id : '+str(restaurantId))
-        print('user id : '+str(userId))
         restaurantInfo = Restaurant.objects.filter(id=restaurantId)
         restaurant_serializer = RestaurantSerializer(restaurantInfo, many=True)
-        print(str(11111111111111))
         star_list = Star.objects.filter(restaurant=restaurantId)
 
         ratingAverageValue = 0
@@ -281,15 +278,6 @@ class RestaurantDetailInfoViewSet(viewsets.ModelViewSet):
         images = RestaurantImage.objects.filter(restaurant=restaurantId)
         image_serializer = ImageSerializer(images, many=True)
 
-        #detailRestaurant = serializers.serialize("json", restaurantInfo)
-        # restaurantMap = serializers.serialize('json', mapInfo)
-        restaurantImages = serializers.serialize("json", images)
-        #json = JSONRenderer().render(restaurantImages)
-
-
-        #print(str(detailRestaurant))
-        #return HttpResponse(restaurantImages, content_type='application/json')
-        #return JsonResponse(images)
         return Response({
             'restaurant': restaurant_serializer.data,
             'ratingAverage': ratingAverageValue,
@@ -298,17 +286,4 @@ class RestaurantDetailInfoViewSet(viewsets.ModelViewSet):
             'map': map_serializer.data,
             'images': image_serializer.data
         })
-
-
-        # #
-        # 이름
-        # 주소
-        # 카테고리
-        # 날씨
-        # 거리
-        # 설명
-        # 별점
-        # 댓그카운트
-        # 이미지리스트
-        # 위도
-        # 경도#
+    
