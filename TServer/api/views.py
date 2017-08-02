@@ -2,7 +2,6 @@
 import logging
 import random
 
-from django.core import serializers
 from django.db.models import Avg
 from django.http import JsonResponse
 from django.core.exceptions import ObjectDoesNotExist
@@ -289,12 +288,13 @@ class RestaurantDetailInfoViewSet(viewsets.ModelViewSet):
 
         restaurantInfo = Restaurant.objects.filter(id=restaurantId)
         restaurant_serializer = RestaurantDetailSerializer(restaurantInfo, many=True)
+        stars = Star.objects.filter(restaurant=restaurantId)
+        ratingAverageValue = 0
+        if stars.exists():
+            ratingAverageValue = stars.aggregate(Avg('rating'))['rating__avg']
 
-        ratingAverageValue = Star.objects.filter(restaurant=restaurantId).aggregate(Avg('rating'))
         userRatingValue = Star.objects.filter(restaurant=restaurantId, user=userId)
-
         user_star_serializer = StarSerializer(userRatingValue, many=True)
-
         commentCount = Comment.objects.filter(restaurant=restaurantId).count()
         mapInfo = RestaurantMap.objects.filter(restaurant=restaurantId)
         map_serializer = MapSerializer(mapInfo, many=True)
@@ -303,7 +303,7 @@ class RestaurantDetailInfoViewSet(viewsets.ModelViewSet):
 
         return Response({
             'restaurant': restaurant_serializer.data,
-            'ratingAverage': ratingAverageValue['rating__avg'],
+            'ratingAverage': ratingAverageValue,
             'userRating': user_star_serializer.data,
             'commentCount': commentCount,
             'map': map_serializer.data,
