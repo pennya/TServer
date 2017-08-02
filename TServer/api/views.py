@@ -3,7 +3,8 @@ import logging
 import random
 
 from django.core import serializers
-from django.http import JsonResponse, HttpResponse
+from django.db.models import Avg
+from django.http import JsonResponse
 from django.core.exceptions import ObjectDoesNotExist
 from django.core.exceptions import MultipleObjectsReturned
 
@@ -11,7 +12,9 @@ from rest_framework import status
 from rest_framework import viewsets
 from rest_framework.response import Response
 
-from .serializers import CategorySerializer, MapSerializer, ImageSerializer
+from .serializers import CategorySerializer
+from .serializers import MapSerializer
+from .serializers import ImageSerializer
 from .serializers import HistoryDetailSerializer
 from .serializers import RestaurantSerializer
 from .serializers import RestaurantDetailSerializer
@@ -276,28 +279,23 @@ class HistoryViewSet(viewsets.ModelViewSet):
         return super(HistoryViewSet, self).get_serializer_class()
 
 
-
 class RestaurantDetailInfoViewSet(viewsets.ModelViewSet):
     queryset = Restaurant.objects.all()
     serializer_class = RestaurantSerializer
 
     def create(self, request, *args, **kwargs):
-        result = {}
         restaurantId = request.data['id']
         userId = request.data['userId']
+
         restaurantInfo = Restaurant.objects.filter(id=restaurantId)
-        restaurant_serializer = RestaurantSerializer(restaurantInfo, many=True)
-        star_list = Star.objects.filter(restaurant=restaurantId)
+        restaurant_serializer = RestaurantDetailSerializer(restaurantInfo, many=True)
 
-        ratingAverageValue = 0
-
-        for i in star_list:
-            ratingAverageValue += i.rating
-
-        ratingAverageValue = round(ratingAverageValue / star_list.count())
+        ratingAverageValue = Star.objects.filter(restaurant=restaurantId).aggregate(Avg('rating'))
         userRatingValue = Star.objects.filter(restaurant=restaurantId, user=userId)
+
         user_star_serializer = StarSerializer(userRatingValue, many=True)
-        comment_list = Comment.objects.filter(restaurant=restaurantId).all()
+
+        commentCount = Comment.objects.filter(restaurant=restaurantId).count()
         mapInfo = RestaurantMap.objects.filter(restaurant=restaurantId)
         map_serializer = MapSerializer(mapInfo, many=True)
         images = RestaurantImage.objects.filter(restaurant=restaurantId)
@@ -305,9 +303,9 @@ class RestaurantDetailInfoViewSet(viewsets.ModelViewSet):
 
         return Response({
             'restaurant': restaurant_serializer.data,
-            'ratingAverage': ratingAverageValue,
+            'ratingAverage': ratingAverageValue['rating__avg'],
             'userRating': user_star_serializer.data,
-            'commentCount': len(comment_list),
+            'commentCount': commentCount,
             'map': map_serializer.data,
             'images': image_serializer.data
         })
