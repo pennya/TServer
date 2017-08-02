@@ -11,7 +11,9 @@ from rest_framework import viewsets
 from rest_framework.response import Response
 
 from .serializers import CategorySerializer
+from .serializers import HistoryDetailSerializer
 from .serializers import RestaurantSerializer
+from .serializers import RestaurantDetailSerializer
 from .serializers import WeatherSerializer
 from .serializers import DistanceSerializer
 from .serializers import UserSerializer
@@ -111,6 +113,7 @@ class LoginViewSet(viewsets.ModelViewSet):
             return JsonResponse(result, status=status.HTTP_400_BAD_REQUEST)
 
         #result['result'] = status.HTTP_200_OK
+        result['pk'] = user.pk
         result['id'] = user.id
         result['password'] = user.password
         result['email'] = user.email
@@ -160,6 +163,16 @@ class RestaurantViewSet(viewsets.ModelViewSet):
     """
     queryset = Restaurant.objects.all()
     serializer_class = RestaurantSerializer
+    action_serializers = {
+        'list' : RestaurantDetailSerializer
+    }
+
+    def get_serializer_class(self):
+        if hasattr(self, 'action_serializers'):
+            if self.action in self.action_serializers:
+                return self.action_serializers[self.action]
+
+        return super(RestaurantViewSet, self).get_serializer_class()
 
 
 class CommentViewSet(viewsets.ModelViewSet):
@@ -239,6 +252,10 @@ class HistoryViewSet(viewsets.ModelViewSet):
     queryset = History.objects.all()
     serializer_class = HistorySerializer
 
+    action_serializers = {
+        'list' : HistoryDetailSerializer
+    }
+
     def get_queryset(self):
         user_id = self.request.query_params.get('user')
 
@@ -248,3 +265,13 @@ class HistoryViewSet(viewsets.ModelViewSet):
             queryset = History.objects.all()
 
         return queryset
+
+    def get_serializer_class(self):
+        if hasattr(self, 'action_serializers'):
+            if self.action in self.action_serializers:
+                return self.action_serializers[self.action]
+
+        return super(HistoryViewSet, self).get_serializer_class()
+
+
+
