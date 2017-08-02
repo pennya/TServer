@@ -222,7 +222,7 @@ class StarViewSet(viewsets.ModelViewSet):
         result = {}
 
         star_obj = self.get_queryset()
-        if star_obj.count() != 0:
+        if star_obj.exists():
             star_json = StarSerializer(star_obj, many=True).data
             result.update({
                 'result' : star_json
@@ -242,7 +242,7 @@ class StarViewSet(viewsets.ModelViewSet):
         user_id = request.data['user']
 
         star_obj = Star.objects.filter(restaurant=restaurant_id, user=user_id)
-        if star_obj.count() == 0:
+        if not star_obj.exists():
             return super().create(request)
 
         else:
