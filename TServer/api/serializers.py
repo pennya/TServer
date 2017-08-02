@@ -1,6 +1,8 @@
 from rest_framework import serializers
 
-from .models import Category, RestaurantMap, RestaurantImage
+from .models import Category
+from .models import RestaurantMap
+from .models import RestaurantImage
 from .models import Restaurant
 from .models import Distance
 from .models import User
