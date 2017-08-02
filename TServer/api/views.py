@@ -288,11 +288,7 @@ class RestaurantDetailInfoViewSet(viewsets.ModelViewSet):
 
         restaurantInfo = Restaurant.objects.filter(id=restaurantId)
         restaurant_serializer = RestaurantDetailSerializer(restaurantInfo, many=True)
-        stars = Star.objects.filter(restaurant=restaurantId)
-        ratingAverageValue = 0
-        if stars.exists():
-            ratingAverageValue = stars.aggregate(Avg('rating'))['rating__avg']
-
+        ratingAverageValue = Star.objects.filter(restaurant=restaurantId).aggregate(Avg('rating'))
         userRatingValue = Star.objects.filter(restaurant=restaurantId, user=userId)
         user_star_serializer = StarSerializer(userRatingValue, many=True)
         commentCount = Comment.objects.filter(restaurant=restaurantId).count()
@@ -303,7 +299,8 @@ class RestaurantDetailInfoViewSet(viewsets.ModelViewSet):
 
         return Response({
             'restaurant': restaurant_serializer.data,
-            'ratingAverage': ratingAverageValue,
+            'ratingAverage': ratingAverageValue['rating__avg']
+                                if ratingAverageValue['rating__avg'] is not None else 0,
             'userRating': user_star_serializer.data,
             'commentCount': commentCount,
             'map': map_serializer.data,
