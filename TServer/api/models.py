@@ -53,6 +53,7 @@ class Distance(models.Model):
 
 
 class Restaurant(models.Model):
+    id = models.AutoField(primary_key=True)
     name = models.CharField(max_length=255)
     address = models.CharField(max_length=255)
     category = models.ForeignKey(Category, on_delete=models.CASCADE)
@@ -93,3 +94,15 @@ class History(models.Model):
 
     def __str__(self):
         return self.user
+
+class RestaurantMap(models.Model):
+    id = models.AutoField(primary_key=True)
+    restaurant = models.ForeignKey(Restaurant, on_delete=models.CASCADE)
+    latitude = models.CharField(max_length=40, null=True)
+    longitude = models.CharField(max_length=40, null=True)
+    realDistance = models.FloatField(max_length=10, null=True)
+
+class RestaurantImage(models.Model):
+    id = models.AutoField(primary_key=True)
+    restaurant = models.ForeignKey(Restaurant, on_delete=models.CASCADE)
+    path = models.CharField(max_length=255)

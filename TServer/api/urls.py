@@ -15,7 +15,7 @@ from api.views import RecommandViewSet
 from api.views import CommentViewSet
 from api.views import StarViewSet
 from api.views import HistoryViewSet
-
+from .views import RestaurantDetailInfoViewSet
 
 router = routers.DefaultRouter()
 router.register(r'versions', VersionViewSet, base_name='versions')
@@ -28,6 +28,7 @@ router.register(r'restaurants', RestaurantViewSet, base_name='restaurants')
 router.register(r'recommands', RecommandViewSet, base_name='recommands')
 router.register(r'comments', CommentViewSet, base_name='comments')
 router.register(r'stars', StarViewSet, base_name='stars')
+router.register(r'detail_restaurants', RestaurantDetailInfoViewSet, base_name='detail_restaurants')
 router.register(r'histories', HistoryViewSet, base_name='histories')
 
 schema_view = get_swagger_view(title='TServer API')

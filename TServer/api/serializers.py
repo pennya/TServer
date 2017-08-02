@@ -1,6 +1,6 @@
 from rest_framework import serializers
 
-from .models import Category
+from .models import Category, RestaurantMap, RestaurantImage
 from .models import Restaurant
 from .models import Distance
 from .models import User
@@ -70,3 +70,13 @@ class HistorySerializer(serializers.ModelSerializer):
     class Meta:
         model = History
         fields = ('id', 'restaurant', 'user', 'reg_date')
+
+class MapSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = RestaurantMap
+        fields = ('id', 'restaurant', 'latitude', 'longitude', 'realDistance')
+
+class ImageSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = RestaurantImage
+        fields = ('id', 'path', 'restaurant')

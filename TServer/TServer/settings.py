@@ -82,6 +82,14 @@ WSGI_APPLICATION = 'TServer.wsgi.application'
 # https://docs.djangoproject.com/en/1.10/ref/settings/#databases
 
 DATABASES = {
+    # 'default': {
+    #     'ENGINE': 'django.db.backends.mysql',
+    #     'NAME': 'company_near_food',  # 데이터베이스 이름
+    #     'USER': 'dev',    # MySQL 사용자 계정
+    #     'PASSWORD': 'dev123!@#',  # MySQL 패스워드
+    #     'HOST': "122.199.199.121",
+    #     'PORT': "3306"
+    # }
     'default': {
         'ENGINE': 'django.db.backends.mysql',
         'NAME': 'company_near_food',  # 데이터베이스 이름
