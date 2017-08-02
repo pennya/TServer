@@ -11,8 +11,12 @@ from rest_framework import status
 from rest_framework import viewsets
 from rest_framework.response import Response
 
-from .serializers import CategorySerializer, MapSerializer, ImageSerializer
+<<<<<<< HEAD
+from .serializers import CategorySerializer
 from .serializers import HistoryDetailSerializer
+=======
+from .serializers import CategorySerializer, MapSerializer, ImageSerializer
+>>>>>>> develop
 from .serializers import RestaurantSerializer
 from .serializers import RestaurantDetailSerializer
 from .serializers import WeatherSerializer
@@ -268,6 +272,7 @@ class HistoryViewSet(viewsets.ModelViewSet):
 
         return queryset
 
+<<<<<<< HEAD
     def get_serializer_class(self):
         if hasattr(self, 'action_serializers'):
             if self.action in self.action_serializers:
@@ -276,6 +281,8 @@ class HistoryViewSet(viewsets.ModelViewSet):
         return super(HistoryViewSet, self).get_serializer_class()
 
 
+
+=======
 
 class RestaurantDetailInfoViewSet(viewsets.ModelViewSet):
     queryset = Restaurant.objects.all()
@@ -311,3 +318,4 @@ class RestaurantDetailInfoViewSet(viewsets.ModelViewSet):
             'map': map_serializer.data,
             'images': image_serializer.data
         })
+>>>>>>> develop

@@ -82,6 +82,7 @@ class HistorySerializer(serializers.ModelSerializer):
         model = History
         fields = ('id', 'restaurant', 'user', 'reg_date')
 
+<<<<<<< HEAD
 
 class HistoryDetailSerializer(serializers.ModelSerializer):
     restaurant = RestaurantSerializer()
@@ -90,15 +91,14 @@ class HistoryDetailSerializer(serializers.ModelSerializer):
     class Meta:
         model = History
         fields = ('id', 'restaurant', 'user', 'reg_date')
-
-
+=======
 class MapSerializer(serializers.ModelSerializer):
     class Meta:
         model = RestaurantMap
         fields = ('id', 'restaurant', 'latitude', 'longitude', 'realDistance')
 
-
 class ImageSerializer(serializers.ModelSerializer):
     class Meta:
         model = RestaurantImage
         fields = ('id', 'path', 'restaurant')
+>>>>>>> develop
