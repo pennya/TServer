@@ -2,8 +2,8 @@
 import logging
 import random
 
-from django.core import serializers
-from django.http import JsonResponse, HttpResponse
+from django.db.models import Avg
+from django.http import JsonResponse
 from django.core.exceptions import ObjectDoesNotExist
 from django.core.exceptions import MultipleObjectsReturned
 
@@ -11,8 +11,12 @@ from rest_framework import status
 from rest_framework import viewsets
 from rest_framework.response import Response
 
-from .serializers import CategorySerializer, MapSerializer, ImageSerializer
+from .serializers import CategorySerializer
+from .serializers import MapSerializer
+from .serializers import ImageSerializer
+from .serializers import HistoryDetailSerializer
 from .serializers import RestaurantSerializer
+from .serializers import RestaurantDetailSerializer
 from .serializers import WeatherSerializer
 from .serializers import DistanceSerializer
 from .serializers import UserSerializer
@@ -113,6 +117,7 @@ class LoginViewSet(viewsets.ModelViewSet):
             return JsonResponse(result, status=status.HTTP_400_BAD_REQUEST)
 
         #result['result'] = status.HTTP_200_OK
+        result['pk'] = user.pk
         result['id'] = user.id
         result['password'] = user.password
         result['email'] = user.email
@@ -162,6 +167,16 @@ class RestaurantViewSet(viewsets.ModelViewSet):
     """
     queryset = Restaurant.objects.all()
     serializer_class = RestaurantSerializer
+    action_serializers = {
+        'list' : RestaurantDetailSerializer
+    }
+
+    def get_serializer_class(self):
+        if hasattr(self, 'action_serializers'):
+            if self.action in self.action_serializers:
+                return self.action_serializers[self.action]
+
+        return super(RestaurantViewSet, self).get_serializer_class()
 
 
 class CommentViewSet(viewsets.ModelViewSet):
@@ -206,7 +221,7 @@ class StarViewSet(viewsets.ModelViewSet):
         result = {}
 
         star_obj = self.get_queryset()
-        if star_obj.count() != 0:
+        if star_obj.exists():
             star_json = StarSerializer(star_obj, many=True).data
             result.update({
                 'result' : star_json
@@ -226,7 +241,7 @@ class StarViewSet(viewsets.ModelViewSet):
         user_id = request.data['user']
 
         star_obj = Star.objects.filter(restaurant=restaurant_id, user=user_id)
-        if star_obj.count() == 0:
+        if not star_obj.exists():
             return super().create(request)
 
         else:
@@ -241,6 +256,10 @@ class HistoryViewSet(viewsets.ModelViewSet):
     queryset = History.objects.all()
     serializer_class = HistorySerializer
 
+    action_serializers = {
+        'list' : HistoryDetailSerializer
+    }
+
     def get_queryset(self):
         user_id = self.request.query_params.get('user')
 
@@ -251,28 +270,28 @@ class HistoryViewSet(viewsets.ModelViewSet):
 
         return queryset
 
+    def get_serializer_class(self):
+        if hasattr(self, 'action_serializers'):
+            if self.action in self.action_serializers:
+                return self.action_serializers[self.action]
+
+        return super(HistoryViewSet, self).get_serializer_class()
+
 
 class RestaurantDetailInfoViewSet(viewsets.ModelViewSet):
     queryset = Restaurant.objects.all()
     serializer_class = RestaurantSerializer
 
     def create(self, request, *args, **kwargs):
-        result = {}
         restaurantId = request.data['id']
         userId = request.data['userId']
+
         restaurantInfo = Restaurant.objects.filter(id=restaurantId)
-        restaurant_serializer = RestaurantSerializer(restaurantInfo, many=True)
-        star_list = Star.objects.filter(restaurant=restaurantId)
-
-        ratingAverageValue = 0
-
-        for i in star_list:
-            ratingAverageValue += i.rating
-
-        ratingAverageValue = round(ratingAverageValue / star_list.count())
+        restaurant_serializer = RestaurantDetailSerializer(restaurantInfo, many=True)
+        ratingAverageValue = Star.objects.filter(restaurant=restaurantId).aggregate(Avg('rating'))
         userRatingValue = Star.objects.filter(restaurant=restaurantId, user=userId)
         user_star_serializer = StarSerializer(userRatingValue, many=True)
-        comment_list = Comment.objects.filter(restaurant=restaurantId).all()
+        commentCount = Comment.objects.filter(restaurant=restaurantId).count()
         mapInfo = RestaurantMap.objects.filter(restaurant=restaurantId)
         map_serializer = MapSerializer(mapInfo, many=True)
         images = RestaurantImage.objects.filter(restaurant=restaurantId)
@@ -280,9 +299,10 @@ class RestaurantDetailInfoViewSet(viewsets.ModelViewSet):
 
         return Response({
             'restaurant': restaurant_serializer.data,
-            'ratingAverage': ratingAverageValue,
+            'ratingAverage': ratingAverageValue['rating__avg']
+                                if ratingAverageValue['rating__avg'] is not None else 0,
             'userRating': user_star_serializer.data,
-            'commentCount': len(comment_list),
+            'commentCount': commentCount,
             'map': map_serializer.data,
             'images': image_serializer.data
         })

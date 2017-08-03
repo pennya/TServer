@@ -1,6 +1,8 @@
 from rest_framework import serializers
 
-from .models import Category, RestaurantMap, RestaurantImage
+from .models import Category
+from .models import RestaurantMap
+from .models import RestaurantImage
 from .models import Restaurant
 from .models import Distance
 from .models import User
@@ -54,6 +56,17 @@ class RestaurantSerializer(serializers.ModelSerializer):
         }
 
 
+class RestaurantDetailSerializer(serializers.ModelSerializer):
+    category = CategorySerializer()
+    weather = WeatherSerializer()
+    distance = DistanceSerializer()
+
+    class Meta:
+        model = Restaurant
+        fields = ('id', 'name', 'address', 'category', 'weather',
+                  'distance', 'description', )
+
+
 class CommentSerializer(serializers.ModelSerializer):
     class Meta:
         model = Comment
@@ -71,10 +84,21 @@ class HistorySerializer(serializers.ModelSerializer):
         model = History
         fields = ('id', 'restaurant', 'user', 'reg_date')
 
+
+class HistoryDetailSerializer(serializers.ModelSerializer):
+    restaurant = RestaurantSerializer()
+    user = UserSerializer()
+
+    class Meta:
+        model = History
+        fields = ('id', 'restaurant', 'user', 'reg_date')
+
+
 class MapSerializer(serializers.ModelSerializer):
     class Meta:
         model = RestaurantMap
         fields = ('id', 'restaurant', 'latitude', 'longitude', 'realDistance')
+
 
 class ImageSerializer(serializers.ModelSerializer):
     class Meta:
