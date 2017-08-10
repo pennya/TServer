@@ -27,7 +27,8 @@ from .serializers import HistorySerializer
 
 from .forms import UserJoinForm
 
-from .models import Category, RestaurantImage
+from .models import Category
+from .models import RestaurantImage
 from .models import Version
 from .models import Restaurant
 from .models import Distance
@@ -280,7 +281,7 @@ class HistoryViewSet(viewsets.ModelViewSet):
 
 class RestaurantDetailInfoViewSet(viewsets.ModelViewSet):
     queryset = Restaurant.objects.all()
-    serializer_class = RestaurantSerializer
+    serializer_class = RestaurantDetailSerializer
 
     def create(self, request, *args, **kwargs):
         restaurantId = request.data['id']

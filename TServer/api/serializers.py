@@ -1,3 +1,4 @@
+from django.db.models import Avg
 from rest_framework import serializers
 
 from .models import Category
@@ -56,17 +57,6 @@ class RestaurantSerializer(serializers.ModelSerializer):
         }
 
 
-class RestaurantDetailSerializer(serializers.ModelSerializer):
-    category = CategorySerializer()
-    weather = WeatherSerializer()
-    distance = DistanceSerializer()
-
-    class Meta:
-        model = Restaurant
-        fields = ('id', 'name', 'address', 'category', 'weather',
-                  'distance', 'description', )
-
-
 class CommentSerializer(serializers.ModelSerializer):
     class Meta:
         model = Comment
@@ -104,3 +94,22 @@ class ImageSerializer(serializers.ModelSerializer):
     class Meta:
         model = RestaurantImage
         fields = ('id', 'path', 'restaurant')
+
+
+class RestaurantDetailSerializer(serializers.ModelSerializer):
+    category = CategorySerializer()
+    weather = WeatherSerializer()
+    distance = DistanceSerializer()
+    restaurantimage_set = ImageSerializer(many=True, read_only=True)
+    ratingAverage = serializers.SerializerMethodField(read_only=True)
+
+    def get_ratingAverage(self, restaurant):
+        ratingAvgVal = Star.objects.filter(
+            restaurant=restaurant
+        ).aggregate(Avg('rating'))['rating__avg']
+        return ratingAvgVal if ratingAvgVal is not None else 0
+
+    class Meta:
+        model = Restaurant
+        fields = ('id', 'name', 'address', 'category', 'weather',
+                  'distance', 'description', 'restaurantimage_set', 'ratingAverage',)
