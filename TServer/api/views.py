@@ -283,27 +283,32 @@ class RestaurantDetailInfoViewSet(viewsets.ModelViewSet):
     queryset = Restaurant.objects.all()
     serializer_class = RestaurantDetailSerializer
 
+    action_serializers = {
+        'list': RestaurantDetailSerializer,
+    }
+
+    def get_serializer_class(self):
+        if hasattr(self, 'action_serializers'):
+            if self.action in self.action_serializers:
+                return self.action_serializers[self.action]
+
+        return super(RestaurantDetailInfoViewSet, self).get_serializer_class()
+
     def create(self, request, *args, **kwargs):
         restaurantId = request.data['id']
         userId = request.data['userId']
 
         restaurantInfo = Restaurant.objects.filter(id=restaurantId)
         restaurant_serializer = RestaurantDetailSerializer(restaurantInfo, many=True)
-        ratingAverageValue = Star.objects.filter(restaurant=restaurantId).aggregate(Avg('rating'))
         userRatingValue = Star.objects.filter(restaurant=restaurantId, user=userId)
         user_star_serializer = StarSerializer(userRatingValue, many=True)
         commentCount = Comment.objects.filter(restaurant=restaurantId).count()
         mapInfo = RestaurantMap.objects.filter(restaurant=restaurantId)
         map_serializer = MapSerializer(mapInfo, many=True)
-        images = RestaurantImage.objects.filter(restaurant=restaurantId)
-        image_serializer = ImageSerializer(images, many=True)
 
         return Response({
             'restaurant': restaurant_serializer.data,
-            'ratingAverage': ratingAverageValue['rating__avg']
-                                if ratingAverageValue['rating__avg'] is not None else 0,
             'userRating': user_star_serializer.data,
             'commentCount': commentCount,
             'map': map_serializer.data,
-            'images': image_serializer.data
         })
