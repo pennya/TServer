@@ -2,6 +2,8 @@ from django.contrib import admin
 
 # Register your models here.
 from api.models import Distance
+from api.models import RestaurantMap
+from api.models import RestaurantImage
 from api.models import Weather
 from api.models import Restaurant
 from api.models import Category
@@ -57,3 +59,5 @@ admin.site.register(Restaurant, RestaurantAdmin)
 admin.site.register(Comment, CommentAdmin)
 admin.site.register(Star, StarAdmin)
 admin.site.register(History, HistoryAdmin)
+admin.site.register(RestaurantImage)
+admin.site.register(RestaurantMap)

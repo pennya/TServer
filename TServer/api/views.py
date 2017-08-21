@@ -224,16 +224,14 @@ class StarViewSet(viewsets.ModelViewSet):
         star_obj = self.get_queryset()
         if star_obj.exists():
             star_json = StarSerializer(star_obj, many=True).data
-            result.update({
-                'result' : star_json
-            })
+            return Response(star_json)
+
         else:
             result.update({
                 'result': 414,
                 'message': 'could not find any matched content',
             })
-
-        return Response(result)
+            return Response(result)
 
     def create(self, request, *args, **kwargs):
         result = {}
